@@ -10,3 +10,6 @@ __pycache__/
 
 # 系统
 .DS_Store
+
+# subagent-driven-development 暂存（账本/任务简报/diff）
+.superpowers/
