@@ -1,4 +1,5 @@
-import shutil
+import subprocess
+
 import pytest
 
 import run_sim
@@ -18,7 +19,6 @@ def test_m0_pipeline_end_to_end(tmp_path, monkeypatch):
     assert usd.exists()
 
     # 2) 渲染：直接调 blender 子进程（复用 render 的常量），输出到 tmp/out/wave
-    import subprocess
     subprocess.run([
         render.BLENDER, "--background", "--python",
         str(repo_root / "blender" / "blender_render.py"), "--",
