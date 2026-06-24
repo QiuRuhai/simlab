@@ -32,9 +32,8 @@ def test_wave_only_z_animates():
     assert isinstance(r, SimResult)
     assert r.positions.shape == (10, 8 * 6, 3)
     # x,y 全程不变
-    for f in range(r.positions.shape[0]):
-        np.testing.assert_allclose(r.positions[f, :, 0], r.positions[0, :, 0], atol=1e-6)
-        np.testing.assert_allclose(r.positions[f, :, 1], r.positions[0, :, 1], atol=1e-6)
+    np.testing.assert_allclose(r.positions[:, :, 0], np.tile(r.positions[0, :, 0], (r.positions.shape[0], 1)), atol=1e-6)
+    np.testing.assert_allclose(r.positions[:, :, 1], np.tile(r.positions[0, :, 1], (r.positions.shape[0], 1)), atol=1e-6)
     # z 真的动了：某后续帧与首帧不同
     assert not np.allclose(r.positions[5, :, 2], r.positions[0, :, 2])
 

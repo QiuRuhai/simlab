@@ -20,9 +20,14 @@ def build_scene(name: str, *, frames: int | None = None, res: int | None = None)
     if frames is not None:
         p["frames"] = frames
     if res is not None:
-        aspect = p["ny"] / p["nx"]
-        p["nx"] = int(res)
-        p["ny"] = max(2, round(res * aspect))
+        if p["nx"] >= p["ny"]:
+            aspect = p["ny"] / p["nx"]
+            p["nx"] = int(res)
+            p["ny"] = max(2, round(res * aspect))
+        else:
+            aspect = p["nx"] / p["ny"]
+            p["ny"] = int(res)
+            p["nx"] = max(2, round(res * aspect))
 
     verts, faces, uvs = build_grid(p["nx"], p["ny"], p["width"], p["height"])
     return generate_wave(
