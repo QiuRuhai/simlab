@@ -45,3 +45,13 @@ def test_bad_position_shape_raises():
             uvs=np.zeros((4, 2), dtype=np.float32),
             fps=24.0, name="t",
         )
+
+
+def test_negative_face_index_raises():
+    with pytest.raises(ValueError):
+        SimResult(
+            positions=np.zeros((2, 4, 3), dtype=np.float32),
+            faces=np.array([[-1, 0, 1]], dtype=np.int32),
+            uvs=np.zeros((4, 2), dtype=np.float32),
+            fps=24.0, name="t",
+        )

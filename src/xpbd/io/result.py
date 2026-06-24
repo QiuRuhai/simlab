@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -30,7 +30,7 @@ class SimResult:
         n = self.positions.shape[1]
         if self.uvs.shape[0] != n:
             raise ValueError(f"uvs N={self.uvs.shape[0]} != positions N={n}")
-        if self.faces.size and int(self.faces.max()) >= n:
+        if self.faces.size and (int(self.faces.max()) >= n or int(self.faces.min()) < 0):
             raise ValueError("face index out of range of vertex count")
 
     @property
