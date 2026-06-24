@@ -42,6 +42,8 @@ def test_usd_roundtrip(tmp_path):
     assert mesh
 
     # 拓扑静态、三角形
+    assert mesh.GetFaceVertexCountsAttr().GetTimeSamples() == []
+    assert mesh.GetFaceVertexIndicesAttr().GetTimeSamples() == []
     counts = list(mesh.GetFaceVertexCountsAttr().Get())
     assert counts == [3] * r.num_faces
     indices = list(mesh.GetFaceVertexIndicesAttr().Get())
@@ -50,6 +52,7 @@ def test_usd_roundtrip(tmp_path):
     # points 逐帧时间采样
     samples = mesh.GetPointsAttr().GetTimeSamples()
     assert len(samples) == r.num_frames
+    assert samples == list(range(1, r.num_frames + 1))
     pts1 = np.array(mesh.GetPointsAttr().Get(Usd.TimeCode(1)), dtype=np.float32)
     np.testing.assert_allclose(pts1, r.positions[0], rtol=0, atol=1e-6)
 
