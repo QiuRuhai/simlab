@@ -727,9 +727,14 @@ def build_scene(name: str, *, frames: int | None = None, res: int | None = None)
     if frames is not None:
         p["frames"] = frames
     if res is not None:
-        aspect = p["ny"] / p["nx"]
-        p["nx"] = int(res)
-        p["ny"] = max(2, round(res * aspect))
+        if p["nx"] >= p["ny"]:           # res = 长边分辨率, 取较长轴
+            aspect = p["ny"] / p["nx"]
+            p["nx"] = int(res)
+            p["ny"] = max(2, round(res * aspect))
+        else:
+            aspect = p["nx"] / p["ny"]
+            p["ny"] = int(res)
+            p["nx"] = max(2, round(res * aspect))
 
     verts, faces, uvs = build_grid(p["nx"], p["ny"], p["width"], p["height"])
     return generate_wave(
@@ -1064,6 +1069,7 @@ def main():
     scene.frame_end = len(frames)
     scene.render.fps = max(1, int(round(args.fps)))
     scene.render.use_sequencer = True
+    scene.render.image_settings.media_type = "VIDEO"   # Blender 5.x: 必须先设, 否则 file_format 枚举隐藏 FFMPEG
     scene.render.image_settings.file_format = "FFMPEG"
     scene.render.ffmpeg.format = "MPEG4"
     scene.render.ffmpeg.codec = "H264"
