@@ -1,0 +1,12 @@
+# 产物
+out/
+
+# Python 环境
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# 系统
+.DS_Store
