@@ -13,11 +13,12 @@ def main(argv: list[str] | None = None) -> Path:
     ap.add_argument("scene", help="场景名，如 wave")
     ap.add_argument("--frames", type=int, default=None)
     ap.add_argument("--res", type=int, default=None, help="长边分辨率")
+    ap.add_argument("--substeps", type=int, default=None, help="每帧 substep 数 (求解器场景)")
     ap.add_argument("--npz", action="store_true", help="同时写调试 cache.npz")
     ap.add_argument("--out", type=str, default=None, help="输出目录（默认 out/<scene>）")
     args = ap.parse_args(argv)
 
-    result = build_scene(args.scene, frames=args.frames, res=args.res)
+    result = build_scene(args.scene, frames=args.frames, res=args.res, substeps=args.substeps)
     out_dir = Path(args.out) if args.out else Path("out") / args.scene
     out_dir.mkdir(parents=True, exist_ok=True)
 

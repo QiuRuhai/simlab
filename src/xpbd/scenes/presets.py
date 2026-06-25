@@ -13,9 +13,22 @@ PRESETS: dict[str, dict] = {
 }
 
 
-def build_scene(name: str, *, frames: int | None = None, res: int | None = None) -> SimResult:
+def build_scene(name: str, *, frames: int | None = None, res: int | None = None,
+                substeps: int | None = None) -> SimResult:
+    if name == "flag":
+        from xpbd.scenes.flag import build_flag
+        kw = {}
+        if frames is not None:
+            kw["frames"] = frames
+        if res is not None:
+            kw["res"] = res
+        if substeps is not None:
+            kw["substeps"] = substeps
+        return build_flag(**kw)
+
     if name not in PRESETS:
-        raise KeyError(f"unknown scene '{name}'; known: {sorted(PRESETS)}")
+        raise KeyError(f"unknown scene '{name}'; known: {sorted(PRESETS) + ['flag']}")
+    # —— 以下为原 wave 路径，保持不变 ——
     p = dict(PRESETS[name])
     if frames is not None:
         p["frames"] = frames
