@@ -572,7 +572,7 @@ git commit -m "test: 求解器稳定性护栏 (垂坠/无NaN/拉伸有界/钉边
 - Produces:
   ```python
   # flag.py
-  def build_flag(*, res=64, frames=250, fps=24.0, substeps=20) -> SimResult
+  def build_flag(*, res=64, frames=250, fps=24.0, substeps=30) -> SimResult
   # presets.py
   build_scene(name, *, frames=None, res=None, substeps=None) -> SimResult  # 分派 wave/flag
   ```
@@ -593,7 +593,7 @@ def test_build_flag_returns_simresult():
     # 竖直朝向: y 基本为 0, z 有展开 (高度方向)
     p0 = r.positions[0]
     assert np.allclose(p0[:, 1], 0.0, atol=1e-6)
-    assert p0[:, 2].ptp() > 0.5            # z 方向铺开 (高度~1.0)
+    assert np.ptp(p0[:, 2]) > 0.5          # z 方向铺开 (高度~1.0); numpy2.0 删了 ndarray.ptp()
 
 
 def test_flag_hoist_edge_pinned():
@@ -627,7 +627,7 @@ from xpbd.solver.topology import build_edges
 
 
 def build_flag(*, res: int = 64, frames: int = 250, fps: float = 24.0,
-               substeps: int = 20, width: float = 1.5, height: float = 1.0,
+               substeps: int = 30, width: float = 1.5, height: float = 1.0,
                mass: float = 0.2) -> SimResult:
     """旗子场景：竖直平面网格 + hoist 竖边钉住 + 重力垂坠（M1a 无风）。"""
     nx = int(res)
