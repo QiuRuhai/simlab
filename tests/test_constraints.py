@@ -54,3 +54,43 @@ def test_larger_compliance_is_softer(ti_cpu):
     stiff = corrected_distance(1e-9)   # 几乎硬 → 接近 1.0
     soft = corrected_distance(1e-1)    # 很软 → 仍接近 1.5
     assert abs(stiff - 1.0) < abs(soft - 1.0)
+
+
+def test_bending_flat_no_correction(ti_cpu):
+    # 两三角共享边 0-1, 对顶点 2/3; 平铺 → 距离与弯曲 C 均为 0 → 无运动
+    pos = np.array([[0, 0, 0], [1, 0, 0], [0.5, 1, 0], [0.5, -1, 0]], dtype=np.float32)
+    edges = np.array([[0, 1]], dtype=np.int32)
+    bend = np.array([[2, 3]], dtype=np.int32)
+    w = np.ones(4, dtype=np.float32)
+    s = ClothSolver(pos, edges, w, bend_pairs=bend, substeps=1, damping=0.0, gravity=(0, 0, 0))
+    before = s.x.to_numpy().copy()
+    s.predict(); s._clear(); s.solve_distance(); s.solve_bending(); s.apply_dx()
+    np.testing.assert_allclose(s.x.to_numpy(), before, atol=1e-6)
+
+
+def test_bending_restores_rest_distance(ti_cpu):
+    # 对顶点 2-3 初始距离 2.0 (= bend rest); 折叠拉近到 0.6 → solve_bending 推回 ~2.0
+    pos = np.array([[0, 0, 0], [1, 0, 0], [0.5, 1, 0], [0.5, -1, 0]], dtype=np.float32)
+    edges = np.array([[0, 1]], dtype=np.int32)      # 共享边在静止, 不干扰
+    bend = np.array([[2, 3]], dtype=np.int32)
+    w = np.ones(4, dtype=np.float32)
+    s = ClothSolver(pos, edges, w, bend_pairs=bend, substeps=20, damping=0.0, gravity=(0, 0, 0))
+    folded = pos.copy()
+    folded[2, 1] = 0.3
+    folded[3, 1] = -0.3                              # 2-3 距离 2.0 → 0.6
+    s.x.from_numpy(folded)
+    out = s.run(1)
+    d = np.linalg.norm(out[0, 2] - out[0, 3])
+    assert abs(d - 2.0) < 0.1                        # 恢复向静止距离
+
+
+def test_bending_optional_absent_matches_m1a(ti_cpu):
+    # 不传 bend_pairs → B=0 → 行为与只有距离约束一致 (向后兼容)
+    pos = np.array([[0, 0, 0], [1.5, 0, 0]], dtype=np.float32)
+    edges = np.array([[0, 1]], dtype=np.int32)
+    w = np.array([1.0, 1.0], dtype=np.float32)
+    s = ClothSolver(pos, edges, w, substeps=20, damping=0.0, gravity=(0, 0, 0))
+    s.rest.from_numpy(np.array([1.0], dtype=np.float32))
+    out = s.run(1)
+    assert abs(np.linalg.norm(out[0, 0] - out[0, 1]) - 1.0) < 0.05
+    assert s.B == 0
