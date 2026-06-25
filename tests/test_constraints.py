@@ -68,20 +68,22 @@ def test_bending_flat_no_correction(ti_cpu):
     np.testing.assert_allclose(s.x.to_numpy(), before, atol=1e-6)
 
 
-def test_bending_restores_rest_distance(ti_cpu):
-    # 对顶点 2-3 初始距离 2.0 (= bend rest); 折叠拉近到 0.6 → solve_bending 推回 ~2.0
+def test_bending_pushes_toward_rest(ti_cpu):
+    # 软弯曲(默认 α_bend=1e-4): 折叠把对顶点 2-3 拉近到 0.6 (静止 2.0),
+    # 一次 solve_bending 后距离增大(朝静止恢复), 单步不过冲。
     pos = np.array([[0, 0, 0], [1, 0, 0], [0.5, 1, 0], [0.5, -1, 0]], dtype=np.float32)
-    edges = np.array([[0, 1]], dtype=np.int32)      # 共享边在静止, 不干扰
+    edges = np.array([[0, 1]], dtype=np.int32)
     bend = np.array([[2, 3]], dtype=np.int32)
     w = np.ones(4, dtype=np.float32)
-    s = ClothSolver(pos, edges, w, bend_pairs=bend, substeps=20, damping=0.0, gravity=(0, 0, 0))
+    s = ClothSolver(pos, edges, w, bend_pairs=bend, substeps=1, damping=0.0, gravity=(0, 0, 0))
     folded = pos.copy()
     folded[2, 1] = 0.3
-    folded[3, 1] = -0.3                              # 2-3 距离 2.0 → 0.6
+    folded[3, 1] = -0.3                         # 2-3 距离 2.0 → 0.6
     s.x.from_numpy(folded)
-    out = s.run(1)
-    d = np.linalg.norm(out[0, 2] - out[0, 3])
-    assert abs(d - 2.0) < 0.1                        # 恢复向静止距离
+    s._clear(); s.solve_bending(); s.apply_dx()
+    d = np.linalg.norm(s.x.to_numpy()[2] - s.x.to_numpy()[3])
+    assert d > 0.61                             # 朝静止距离恢复(变大)
+    assert d <= 2.0 + 1e-3                      # 单步不过冲
 
 
 def test_bending_optional_absent_matches_m1a(ti_cpu):

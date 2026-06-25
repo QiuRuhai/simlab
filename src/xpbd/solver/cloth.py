@@ -10,7 +10,7 @@ class ClothSolver:
 
     def __init__(self, positions0, edges, inv_mass, *, fps=24.0, substeps=20,
                  alpha_dist=1e-7, omega=0.5, damping=0.01, gravity=(0.0, 0.0, -9.8),
-                 bend_pairs=None, alpha_bend=1e-7):
+                 bend_pairs=None, alpha_bend=1e-4):
         positions0 = np.ascontiguousarray(positions0, dtype=np.float32)
         edges = np.ascontiguousarray(edges, dtype=np.int32)
         inv_mass = np.ascontiguousarray(inv_mass, dtype=np.float32)
