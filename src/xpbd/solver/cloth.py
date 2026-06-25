@@ -54,8 +54,37 @@ class ClothSolver:
                 self.v[i] = (self.x[i] - self.x_prev[i]) / self.h
                 self.v[i] *= (1.0 - self.damping)
 
+    @ti.kernel
+    def _clear(self):
+        for i in self.x:
+            self.dx[i] = ti.Vector([0.0, 0.0, 0.0])
+            self.cnt[i] = 0
+
+    @ti.kernel
+    def solve_distance(self):
+        a = self.alpha_dist / (self.h * self.h)
+        for e in self.edge:
+            i, j = self.edge[e][0], self.edge[e][1]
+            d = self.x[i] - self.x[j]
+            ln = d.norm(1e-12)
+            n = d / ln
+            dl = -(ln - self.rest[e]) / (self.w[i] + self.w[j] + a)
+            self.dx[i] += self.w[i] * dl * n       # Taichi += 自动原子化
+            self.dx[j] += -self.w[j] * dl * n
+            self.cnt[i] += 1
+            self.cnt[j] += 1
+
+    @ti.kernel
+    def apply_dx(self):
+        for i in self.x:
+            if self.w[i] > 0 and self.cnt[i] > 0:
+                self.x[i] += self.omega * self.dx[i] / self.cnt[i]
+
     def substep(self):
         self.predict()
+        self._clear()
+        self.solve_distance()
+        self.apply_dx()
         self.update_velocity()
 
     def run(self, frames: int) -> np.ndarray:
