@@ -1,6 +1,6 @@
 import numpy as np
 from xpbd.scenes.cloth import build_grid
-from xpbd.solver.topology import build_edges
+from xpbd.solver.topology import build_edges, build_bend_pairs
 from xpbd.solver.cloth import ClothSolver
 
 
@@ -41,3 +41,18 @@ def test_pinned_edge_stays_fixed(ti_cpu):
     out = s.run(40)
     pinned = w == 0
     np.testing.assert_allclose(out[-1][pinned], pos[pinned], atol=1e-5)
+
+
+def test_drape_with_bending_is_stable(ti_cpu):
+    pos, edges, w = _pinned_small_cloth()
+    _, faces, _ = build_grid(16, 10, 1.5, 1.0)
+    bend = build_bend_pairs(faces)
+    s = ClothSolver(pos, edges, w, substeps=30, bend_pairs=bend)
+    out = s.run(40)
+    last = out[-1]
+    assert np.all(np.isfinite(last))                                   # 无 NaN
+    free = w > 0
+    assert last[free, 2].mean() < pos[free, 2].mean() - 0.01           # 仍下沉
+    rest = np.linalg.norm(pos[edges[:, 0]] - pos[edges[:, 1]], axis=1)
+    cur = np.linalg.norm(last[edges[:, 0]] - last[edges[:, 1]], axis=1)
+    assert (cur / rest).max() < 1.5                                    # 拉伸仍有界
