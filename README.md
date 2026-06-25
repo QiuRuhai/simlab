@@ -35,21 +35,21 @@
 ## 快速开始
 
 ### 依赖
-- **Python 3.12**（模拟端；系统 3.13/3.14 对 Taichi 太新）
+- **Python 3.10–3.12**（模拟端；Taichi 暂不支持 3.13+）
 - **Blender 5.x**（渲染端；需在 `PATH` 上，`blender --version` 可用）
 - **macOS / Apple Silicon**（Taichi Metal 后端；CPU 亦可）
 - 系统 `ffmpeg` 非必需——拼帧自动回退到 Blender 自带的 FFMPEG
 
 ### 安装
+准备一个 Python 3.10–3.12 环境（venv 或 conda 均可），激活后：
 ```bash
-python3.12 -m venv .venv
-.venv/bin/pip install -e ".[dev]"
+pip install -e ".[dev]"
 ```
 
 ### 跑一个 demo
 ```bash
-.venv/bin/python scripts/run_sim.py wave    # → out/wave/cache.usd  (48帧, Z-up, 24fps)
-.venv/bin/python scripts/render.py  wave    # → out/wave/frames/*.png → out/wave/wave.mp4
+python scripts/run_sim.py wave    # → out/wave/cache.usd  (48帧, Z-up, 24fps)
+python scripts/render.py  wave    # → out/wave/frames/*.png → out/wave/wave.mp4
 ```
 
 常用开关：
@@ -61,8 +61,8 @@ render.py  wave --no-video                      # 只渲帧不拼视频
 
 ### 跑测试
 ```bash
-.venv/bin/pytest              # 全部（含会启 Blender 的 slow e2e）
-.venv/bin/pytest -m "not slow"  # 只跑快测
+pytest              # 全部（含会启 Blender 的 slow e2e）
+pytest -m "not slow"  # 只跑快测
 ```
 
 ---
