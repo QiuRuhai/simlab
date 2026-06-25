@@ -95,7 +95,7 @@ class ClothSolver:
     @ti.kernel
     def solve_bending(self):
         a = self.alpha_bend / (self.h * self.h)
-        for b in self.bend_pair:
+        for b in range(self.B):
             i, j = self.bend_pair[b][0], self.bend_pair[b][1]
             d = self.x[i] - self.x[j]
             ln = d.norm(1e-12)
