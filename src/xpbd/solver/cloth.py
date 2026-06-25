@@ -30,7 +30,7 @@ class ClothSolver:
         self.cnt = ti.field(ti.i32, shape=self.N)
         self.edge = ti.Vector.field(2, ti.i32, shape=self.E)
         self.rest = ti.field(ti.f32, shape=self.E)
-        self.g = ti.Vector(list(gravity))
+        self.g = ti.Vector([float(x) for x in gravity], dt=ti.f32)
 
         self.x.from_numpy(positions0)
         self.v.fill(0.0)
